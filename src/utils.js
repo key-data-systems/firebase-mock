@@ -1,25 +1,25 @@
-'use strict';
+"use strict";
 
-var Snapshot = require('./snapshot');
-var FieldValue = require('./firestore-field-value');
-var _ = require('./lodash');
+var Snapshot = require("./snapshot");
+var FieldValue = require("./firestore-field-value");
+var _ = require("./lodash");
 
 exports.makeRefSnap = function makeRefSnap(ref) {
   return new Snapshot(ref, ref.getData(), ref.priority);
 };
 
 exports.mergePaths = function mergePaths(base, add) {
-  return base.replace(/\/$/, '') + '/' + add.replace(/^\//, '');
+  return base.replace(/\/$/, "") + "/" + add.replace(/^\//, "");
 };
 
 exports.cleanData = function cleanData(data) {
   var newData = _.clone(data);
   if (_.isObject(newData)) {
-    if (_.has(newData, '.value')) {
-      newData = _.clone(newData['.value']);
+    if (_.has(newData, ".value")) {
+      newData = _.clone(newData[".value"]);
     }
-    if (_.has(newData, '.priority')) {
-      delete newData['.priority'];
+    if (_.has(newData, ".priority")) {
+      delete newData[".priority"];
     }
     if (_.isEmpty(newData)) {
       newData = null;
@@ -35,7 +35,7 @@ exports.cleanFirestoreData = function cleanFirestoreData(data) {
 
 exports.getMeta = function getMeta(data, key, defaultVal) {
   var val = defaultVal;
-  var metaKey = '.' + key;
+  var metaKey = "." + key;
   if (_.isObject(data) && _.has(data, metaKey)) {
     val = data[metaKey];
     delete data[metaKey];
@@ -44,13 +44,25 @@ exports.getMeta = function getMeta(data, key, defaultVal) {
 };
 
 exports.assertKey = function assertKey(method, key, argNum) {
-  if (!argNum) argNum = 'first';
-  if (typeof(key) !== 'string' || key.match(/[.#$\/\[\]]/)) {
-    throw new Error(method + ' failed: ' + argNum + ' was an invalid key "' + (key + '') + '. Firebase keys must be non-empty strings and can\'t contain ".", "#", "$", "/", "[", or "]"');
+  if (!argNum) argNum = "first";
+  if (typeof key !== "string" || key.match(/[.#$\/\[\]]/)) {
+    throw new Error(
+      method +
+        " failed: " +
+        argNum +
+        ' was an invalid key "' +
+        (key + "") +
+        '. Firebase keys must be non-empty strings and can\'t contain ".", "#", "$", "/", "[", or "]"'
+    );
   }
 };
 
-exports.priAndKeyComparator = function priAndKeyComparator(testPri, testKey, valPri, valKey) {
+exports.priAndKeyComparator = function priAndKeyComparator(
+  testPri,
+  testKey,
+  valPri,
+  valKey
+) {
   var x = 0;
   if (!_.isUndefined(testPri)) {
     x = exports.priorityComparator(testPri, valPri);
@@ -67,7 +79,7 @@ exports.priorityComparator = function priorityComparator(a, b) {
       return a === null ? -1 : 1;
     }
     if (typeof a !== typeof b) {
-      return typeof a === 'number' ? -1 : 1;
+      return typeof a === "number" ? -1 : 1;
     } else {
       return a > b ? 1 : -1;
     }
@@ -76,12 +88,17 @@ exports.priorityComparator = function priorityComparator(a, b) {
 };
 
 exports.isServerTimestamp = function isServerTimestamp(data) {
-  return _.isObject(data) && data['.sv'] === 'timestamp';
+  return _.isObject(data) && data[".sv"] === "timestamp";
 };
 
 exports.removeEmptyRtdbProperties = function removeEmptyRtdbProperties(obj) {
   var t = typeof obj;
-  if (t === 'boolean' || t === 'string' || t === 'number' || t === 'undefined') {
+  if (
+    t === "boolean" ||
+    t === "string" ||
+    t === "number" ||
+    t === "undefined"
+  ) {
     return obj;
   }
 
@@ -108,9 +125,16 @@ exports.removeEmptyRtdbProperties = function removeEmptyRtdbProperties(obj) {
   }
 };
 
-exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties(obj) {
+exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties(
+  obj
+) {
   var t = typeof obj;
-  if (t === 'boolean' || t === 'string' || t === 'number' || t === 'undefined') {
+  if (
+    t === "boolean" ||
+    t === "string" ||
+    t === "number" ||
+    t === "undefined"
+  ) {
     return obj;
   }
   if (obj instanceof Date) return obj;
@@ -139,12 +163,12 @@ exports.removeEmptyFirestoreProperties = function removeEmptyFirestoreProperties
 exports.updateToRtdbObject = function updateToRtdbObject(update) {
   var result = {};
   for (var s in update) {
-    var parts = s.split('/');
+    var parts = s.split("/");
     var value = update[s];
     var o = result;
     do {
       var key = parts.shift();
-      if(key) {
+      if (key) {
         var newObject = o[key] || {};
         o[key] = parts.length > 0 ? newObject : value;
         o = newObject;
@@ -157,12 +181,12 @@ exports.updateToRtdbObject = function updateToRtdbObject(update) {
 exports.updateToFirestoreObject = function updateToFirestoreObject(update) {
   var result = {};
   for (var s in update) {
-    var parts = s.split('.');
+    var parts = s.split(".");
     var value = update[s];
     var o = result;
     do {
       var key = parts.shift();
-      if(key) {
+      if (key) {
         var newObject = o[key] || {};
         o[key] = parts.length > 0 ? newObject : value;
         o = newObject;
@@ -177,19 +201,19 @@ exports.updateToFirestoreObject = function updateToFirestoreObject(update) {
  * @param obj
  * @returns {Array} Returns the property paths of undefined properties
  */
-exports.findUndefinedProperties = function (obj) {
+exports.findUndefinedProperties = function(obj) {
   var results = [];
   var path = [];
 
-  var recurse = function (o, p) {
+  var recurse = function(o, p) {
     var keys = _.keys(o);
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
       if (o[key] === undefined) {
-        results.push(p.concat([key]).join('.'));
+        results.push(p.concat([key]).join("."));
       } else {
         var to = typeof o[key];
-        if (to === 'object') {
+        if (to === "object") {
           recurse(o[key], p.concat([key]));
         }
       }

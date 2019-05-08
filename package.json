@@ -1,7 +1,10 @@
 {
-  "name": "firebase-mock",
-  "version": "2.2.10",
-  "description": "Firebase mock library for writing unit tests",
+  "name": "@kds/firebase-mock",
+  "version": "2.3.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "A fork of 'firebase-mock' - Firebase mock library for writing unit tests",
   "main": "./src",
   "scripts": {
     "test": "gulp lint && gulp test",
