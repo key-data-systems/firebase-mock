@@ -1,5 +1,5 @@
 {
-  "name": "@kds/firebase-mock",
+  "name": "@pie-kds/firebase-mock",
   "version": "2.3.0",
   "publishConfig": {
     "access": "public"
