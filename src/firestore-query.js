@@ -160,7 +160,8 @@ MockFirestoreQuery.prototype.onSnapshot = function (optionsOrObserverOrOnNext, o
     onError = onErrorArg;
   }
   var context = {
-    data: self._results(),
+    // data: self._results(),
+    data: null
   };
   var onSnapshot = function () {
     // compare the current state to the one from when this function was created

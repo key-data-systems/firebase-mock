@@ -376,6 +376,20 @@ describe('MockFirestoreCollection', function () {
   });
 
   describe('#onSnapshot', function () {
+    it('returns value on first call', function(done) {
+      collection.doc('a').update({name: 'A'}, {setMerge: true});
+      db.autoFlush();
+
+      collection.onSnapshot(function(snap) {
+        var names = [];
+        snap.docs.forEach(function(doc) {
+          names.push(doc.data().name);
+        });
+        expect(names).to.contain('A');
+        expect(names).not.to.contain('a');
+        done();
+      });
+    });
     it('returns value after collection is updated', function (done) {
       collection.onSnapshot(function(snap) {
         var names = [];
