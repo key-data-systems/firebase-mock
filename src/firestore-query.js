@@ -160,7 +160,9 @@ MockFirestoreQuery.prototype.onSnapshot = function (optionsOrObserverOrOnNext, o
     onError = onErrorArg;
   }
   var context = {
-    data: self._results(),
+    data: {
+      results: {}
+    },
   };
   var onSnapshot = function () {
     // compare the current state to the one from when this function was created
@@ -168,8 +170,31 @@ MockFirestoreQuery.prototype.onSnapshot = function (optionsOrObserverOrOnNext, o
     if (err === null) {
       self.get().then(function (querySnapshot) {
         var results = self._results();
-        if (JSON.stringify(results) !== JSON.stringify(context.data) || includeMetadataChanges) {
-          onNext(new QuerySnapshot(self.parent === null ? self : self.parent.collection(self.id), results.results, results.keyOrder));
+
+        var added = {};
+        var removed = {};
+        var modified = {};
+
+        _.forEach(results.results, function(nextValue, nextKey) {
+            if(Object.keys(context.data.results || {}).indexOf(nextKey) === -1) {
+              added[nextKey] = nextValue;
+            } else if (!_.isEqual(context.data.results[nextKey], nextValue)) {
+              modified[nextKey] = nextValue;
+            }
+        });
+
+        _.forEach(context.data.results, function(value, key) {
+          if (Object.keys(results.results).indexOf(key) === -1) {
+            removed[key] = value;
+          }
+        });
+
+        var hasAdditions = Object.keys(added).length > 0;
+        var hasRemovals = Object.keys(removed).length > 0;
+        var hasModififations = Object.keys(modified).length > 0;
+
+        if (hasAdditions || hasRemovals || hasModififations || includeMetadataChanges) {
+          onNext(new QuerySnapshot(self.parent === null ? self : self.parent.collection(self.id), results.results, results.keyOrder, {added, removed, modified}));
           // onNext(new QuerySnapshot(self.id, self.ref, results));
           context.data = results;
         }

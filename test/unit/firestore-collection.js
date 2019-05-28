@@ -390,6 +390,97 @@ describe('MockFirestoreCollection', function () {
       collection.flush();
     });
 
+    it('returns value on first call', function(done) {
+      collection.doc('a').update({name: 'A'}, {setMerge: true});
+      db.autoFlush();
+
+      collection.onSnapshot(function(snap) {
+        var names = [];
+        snap.docs.forEach(function(doc) {
+          names.push(doc.data().name);
+        });
+        expect(names).to.contain('A');
+        expect(names).not.to.contain('a');
+        done();
+      });
+    });
+
+    it('(TODO) returns doc changes as "added" on first call', function (done) {
+      collection.onSnapshot(function(snap) {
+        var names = [];
+        var changes = snap.docChanges();
+        // TODO!
+        expect(changes).to.have.length(6);
+        const allAdded = _.every(changes, function(change) {
+          return change.type === 'added';
+        });
+        expect(allAdded).to.equal(true);
+        done();
+      });
+      collection.doc('a').update({name: 'A'}, {setMerge: true});
+      collection.flush();
+    });
+
+    it('(TODO) returns doc changes as "added" on document addition', function (done) {
+      db.autoFlush();
+      var call = 0;
+      collection.onSnapshot(function(snap) {
+        call += 1;
+        if (call === 1) {
+          collection.add({name: 'New'});
+        }
+        if (call === 2) {
+          var changes = snap.docChanges();
+          expect(changes).to.have.length(1);
+          expect(changes[0]).to.have.property('type', 'added');
+          done();
+        }
+      });
+
+      // collection.add({name: 'New'});
+      // collection.flush();
+    });
+
+    it('(TODO) returns doc changes as "modified" on document modification', function (done) {
+      db.autoFlush();
+      var call = 0;
+      collection.onSnapshot(async function(snap) {
+        call += 1;
+        if (call === 1) {
+          await collection.doc('1').update({name: 'Modified'});
+        }
+        if (call === 2) {
+          var changes = snap.docChanges();
+          expect(changes).to.have.length(1);
+          expect(changes[0]).to.have.property('type', 'modified');
+          done();
+        }
+      });
+
+      // collection.add({name: 'New'});
+      // collection.flush();
+    });
+
+    it('(TODO) returns doc changes as "removed" on document deletion', function (done) {
+      db.autoFlush();
+      var call = 0;
+      collection.onSnapshot(async function(snap) {
+        call += 1;
+        if (call === 1) {
+          await collection.doc('1').delete();
+        }
+        if (call === 2) {
+          var changes = snap.docChanges();
+          expect(changes).to.have.length(1);
+          expect(changes[0]).to.have.property('type', 'removed');
+          done();
+        }
+      });
+
+      // collection.add({name: 'New'});
+      // collection.flush();
+    });
+
     it('calls callback after multiple updates', function (done) {
       var callCount = 0;
       collection.onSnapshot(function(snap) {
