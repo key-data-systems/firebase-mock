@@ -26,47 +26,30 @@ MockFirestoreQuerySnapshot.prototype.forEach = function (callback, context) {
   });
 };
 
+
 MockFirestoreQuerySnapshot.prototype.docChanges = function () {
-  var {added = {}, removed = {}, modified = {}} = this.changes;
+  var {added = {}, removed = {}, modified = {}} = this.changes || {};
   const result = [];
 
-  _.forEach(added, function(value, key) {
-    result.push({
-      type: 'added',
-      doc: {
-        id: key,
-        data: function() {
-          return value;
-        }
-      }
-    });
-  });
-
-  _.forEach(modified, function(value, key) {
-    result.push({
-      type: 'modified',
-      doc: {
-        id: key,
-        data: function() {
-          return value;
-        }
-      }
-    });
-  });
-
-  _.forEach(removed, function(value, key) {
-    result.push({
-      type: 'removed',
-      doc: {
-        id: key,
-        data: function() {
-          return value;
-        }
-      }
-    });
-  });
+  _.forEach(added, addChange(result, 'added'));
+  _.forEach(modified, addChange(result, 'modified'));
+  _.forEach(removed, addChange(result, 'removed'));
 
   return result;
 };
+
+function addChange (result, changeType) {
+  return function(value, key) {
+    result.push({
+      type: changeType,
+      doc: {
+        id: key,
+        data: function() {
+          return value;
+        }
+      }
+    });
+  };
+}
 
 module.exports = MockFirestoreQuerySnapshot;
